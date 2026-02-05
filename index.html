@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>403 无访问权限</title>
+    <style>
+        /* 页面全屏空白，弱化视觉焦点，辅助掩饰网址（视觉层面） */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+        /* 隐藏所有可能的页面元素，确保页面无多余内容 */
+        * {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        // 第一步：页面加载后立即执行核心逻辑（无额外无关 JS，符合“禁用多余 JavaScript”要求）
+        (function() {
+            // 1. 掩饰浏览器网址（核心：替换当前会话的网址，地址栏更新，无跳转痕迹）
+            disguiseUrl();
+
+            // 2. 弹出 alert 提示“您无访问权限”（阻塞式，用户点击确认后才会执行后续代码）
+            alert("您无访问权限");
+
+            // 3. 用户点击确认后，依次执行：清除存储 → 清除 Cookie → 退出网站
+            clearAllStorage();
+            clearAllCookies();
+            exitWebsite();
+        })();
+
+        // 封装：掩饰浏览器网址（替换当前地址栏地址，无额外请求）
+        function disguiseUrl() {
+            try {
+                // 方案1：替换为 403 无权限地址（视觉更合理，无痕迹）
+                history.replaceState(null, "无访问权限", "https://example.com/403");
+
+                // 备选方案2：替换为空白页地址（地址栏显示 about:blank）
+                // history.replaceState(null, "", "about:blank");
+            } catch (e) {
+                console.log("网址掩饰失败（部分浏览器环境限制）");
+            }
+        }
+
+        // 封装：清除所有 localStorage 和 sessionStorage（无残留）
+        function clearAllStorage() {
+            try {
+                // 清除长期本地存储
+                localStorage.clear();
+                // 清除当前会话存储
+                sessionStorage.clear();
+                console.log("所有 Storage 已成功清除");
+            } catch (e) {
+                console.log("Storage 清除失败：", e.message);
+            }
+        }
+
+        // 封装：清除所有 Cookie（兼容不同域名/路径，确保清空）
+        function clearAllCookies() {
+            try {
+                const cookies = document.cookie.split(";");
+                const domain = window.location.hostname;
+                const path = window.location.pathname.split("/")[0] || "/";
+
+                // 遍历所有 Cookie 逐个删除（设置过期时间为过去）
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (!cookie) continue;
+
+                    const cookieName = cookie.split("=")[0];
+                    // 配置所有必要参数，确保跨场景删除 Cookie
+                    document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; domain=${domain}; path=${path}; secure; samesite=Strict;`;
+                }
+                console.log("所有 Cookie 已成功清除");
+            } catch (e) {
+                console.log("Cookie 清除失败：", e.message);
+            }
+        }
+
+        // 封装：退出网站（最优替代方案，无法删除全局浏览历史）
+        function exitWebsite() {
+            // 浏览器限制说明：无法删除用户浏览器的全局访问历史（如历史记录列表中的记录）
+            console.log("无法删除浏览器全局浏览历史（隐私安全限制），即将退出当前页面");
+
+            // 方案1：替换当前会话历史并跳转到空白页（最小化留下的历史痕迹）
+            history.replaceState(null, "", "about:blank");
+            window.location.href = "about:blank";
+
+            // 补充：若尝试关闭标签页（仅对 JS 打开的标签页有效，普通标签页无法关闭）
+            // if (window.opener) {
+            //     window.close();
+            // }
+        }
+    </script>
+</body>
+</html>
